@@ -18,6 +18,8 @@ public class RemoteStorage extends AbstractDropBoxClient implements FileStorage{
 	private DbxClientV2 client;
 	private List<String> forbiddenExtension;
 	private List<User> users;
+	private User currentUser;
+	private String rootDirPath;
 	
 	public RemoteStorage() throws DbxException {
         this.client = super.getClient();
@@ -51,6 +53,54 @@ public class RemoteStorage extends AbstractDropBoxClient implements FileStorage{
 	
 	public DbxClientV2 getClient() {
 		return client;
+	}
+
+
+
+	public List<String> getForbiddenExtension() {
+		return forbiddenExtension;
+	}
+
+
+
+	public void setForbiddenExtension(List<String> forbiddenExtension) {
+		this.forbiddenExtension = forbiddenExtension;
+	}
+
+
+
+	public List<User> getUsers() {
+		return users;
+	}
+
+
+
+	public void setUsers(List<User> users) {
+		this.users = users;
+	}
+
+
+
+	public User getCurrentUser() {
+		return currentUser;
+	}
+
+
+
+	public void setCurrentUser(User currentUser) {
+		this.currentUser = currentUser;
+	}
+
+
+
+	public String getRootDirPath() {
+		return rootDirPath;
+	}
+
+
+
+	public void setRootDirPath(String rootDirPath) {
+		this.rootDirPath = rootDirPath;
 	}
 	
 }
