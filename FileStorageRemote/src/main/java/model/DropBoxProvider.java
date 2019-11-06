@@ -8,7 +8,7 @@ import com.dropbox.core.v2.users.FullAccount;
 
 import java8.util.Objects;
 
-abstract class AbstractDropBoxClient {
+abstract class DropBoxProvider {
 	
 	private static final String ACCESS_TOKEN = "4dCicgzo2sAAAAAAAAAADbZ3DJO8Bceev5b7i81cIEr99APC7hsJbez5ZcvGKTNt";
 

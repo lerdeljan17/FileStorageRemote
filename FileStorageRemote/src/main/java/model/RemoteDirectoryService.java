@@ -26,11 +26,11 @@ import exceptions.NotFoundException;
 import raf.rs.FIleStorageSpi.MyDir;
 import raf.rs.FIleStorageSpi.MyFile;
 
-public class MyRemoteDir extends AbstractDropBoxClient implements MyDir {
+public class RemoteDirectoryService extends DropBoxProvider implements MyDir {
 	
 	private RemoteStorage fileStorage;
 	
-	public MyRemoteDir(RemoteStorage fileStorage) {
+	public RemoteDirectoryService(RemoteStorage fileStorage) {
 		super();
 		this.fileStorage = fileStorage;
 	}
@@ -53,10 +53,10 @@ public class MyRemoteDir extends AbstractDropBoxClient implements MyDir {
 		//delete all files in resukts
 		this.clearResults();
 		File[] toRet;
-		MyRemoteFile rm = new MyRemoteFile("");
+		RemoteFileService rm = new RemoteFileService(fileStorage);
 		ListFolderResult listing;
 		try {
-			listing = getClient().files().listFolderBuilder(fileStorage.getRootDirPath() + "/" +dirPath).start();
+			listing = getClient().files().listFolderBuilder(fileStorage.getRootPath() + "/" +dirPath).start();
 			 for (Metadata child : listing.getEntries()) {
 				  if(child.getName().contains(searchFor)) {
 					 rm.downloadFile(child.getPathLower(), "Results/"+child.getName());
@@ -90,7 +90,7 @@ public class MyRemoteDir extends AbstractDropBoxClient implements MyDir {
 			throw new CreateException();
 		}
 		for (int i = 0; i < numberOfDirs; i++) {
-			File dir = createEmptyDirectory(fileStorage.getRootDirPath() + "/" +path, dirsName + i);
+			File dir = createEmptyDirectory(fileStorage.getRootPath() + "/" +path, dirsName + i);
 		}
 		return false;
 	}
@@ -98,7 +98,7 @@ public class MyRemoteDir extends AbstractDropBoxClient implements MyDir {
 	public boolean createEmptyDirectoryB(String path, String fileName) throws Exception {
 		// TODO Auto-generated method stub
 		  try {
-	            FolderMetadata folder = getClient().files().createFolder(fileStorage.getRootDirPath() + "/" +path+"/"+fileName);
+	            FolderMetadata folder = getClient().files().createFolder(fileStorage.getRootPath() + "/" +path+"/"+fileName);
 	            System.out.println(folder.getName());
 	        } catch (CreateFolderErrorException err) {
 	            if (err.errorValue.isPath() && err.errorValue.getPathValue().isConflict()) {
@@ -118,7 +118,7 @@ public class MyRemoteDir extends AbstractDropBoxClient implements MyDir {
 		// TODO Auto-generated method stub
 		  try
 	        {
-	            Metadata metadata = getClient().files().delete(fileStorage.getRootDirPath() + "/" +path+"/"+dirName);
+	            Metadata metadata = getClient().files().delete(fileStorage.getRootPath() + "/" +path+"/"+dirName);
 	        }
 	        catch (DbxException dbxe)
 	        {
@@ -130,7 +130,7 @@ public class MyRemoteDir extends AbstractDropBoxClient implements MyDir {
 	public boolean downloadDirectory(String pathSource, String pathDest) throws Exception {
 		// TODO Auto-generated method stub
 		OutputStream outputStream = new FileOutputStream(pathDest);
-		DownloadZipResult metadata = getClient().files().downloadZipBuilder(fileStorage.getRootDirPath() + "/" +pathSource).download(outputStream);
+		DownloadZipResult metadata = getClient().files().downloadZipBuilder(fileStorage.getRootPath() + "/" +pathSource).download(outputStream);
 		return false;
 	}
 
@@ -157,7 +157,7 @@ public class MyRemoteDir extends AbstractDropBoxClient implements MyDir {
 		ArrayList<String> toRet = new ArrayList<String>();
 		ListFolderResult listing;
 		try {
-			listing = getClient().files().listFolderBuilder(fileStorage.getRootDirPath() + "/" +dirPath).start();
+			listing = getClient().files().listFolderBuilder(fileStorage.getRootPath() + "/" +dirPath).start();
 			 for (Metadata child : listing.getEntries()) {
 				  if(child instanceof FileMetadata) {
 					  toRet.add(child.getName());
@@ -175,10 +175,10 @@ public class MyRemoteDir extends AbstractDropBoxClient implements MyDir {
 
 		this.clearResults();
 		File[] toRet;
-		MyRemoteFile rm = new MyRemoteFile("");
+		RemoteFileService rm = new RemoteFileService(fileStorage);
 		ListFolderResult listing;
 		try {
-			listing = getClient().files().listFolderBuilder(fileStorage.getRootDirPath() + "/" +path).start();
+			listing = getClient().files().listFolderBuilder(fileStorage.getRootPath() + "/" +path).start();
 			 for (Metadata child : listing.getEntries()) {
 				  if(child.getPathLower().contains(extension)) {
 					 rm.downloadFile(child.getPathLower(), "Results/"+child.getName());
@@ -206,10 +206,10 @@ public class MyRemoteDir extends AbstractDropBoxClient implements MyDir {
 
 		this.clearResults();
 		File[] toRet;
-		MyRemoteFile rm = new MyRemoteFile("");
+		RemoteFileService rm = new RemoteFileService(fileStorage);
 		ListFolderResult listing;
 		try {
-			listing = getClient().files().listFolderBuilder(fileStorage.getRootDirPath() + "/" +dirPath).start();
+			listing = getClient().files().listFolderBuilder(fileStorage.getRootPath() + "/" +dirPath).start();
 			 for (Metadata child : listing.getEntries()) {
 				  if(child instanceof FileMetadata) {
 					 rm.downloadFile(child.getPathLower(), "Results/"+child.getName());

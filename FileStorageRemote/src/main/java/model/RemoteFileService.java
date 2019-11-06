@@ -26,18 +26,18 @@ import exceptions.CustomException;
 import exceptions.UploadException;
 import raf.rs.FIleStorageSpi.MyFile;
 
-public class MyRemoteFile extends AbstractDropBoxClient implements MyFile{
+public class RemoteFileService implements MyFile{
 	
-	private String name;
+	private RemoteStorage storage;
 	
-	public MyRemoteFile(String name) {
-		this.name = name;
+	public RemoteFileService(RemoteStorage storage) {
+		this.storage = storage;
 	}
 
 	@Override
 	public boolean delFile(String path, String fileName) throws Exception {
 		try {
-			Metadata metadata = getClient().files().delete(path);
+			Metadata metadata = storage.getClient().files().delete(storage.getRootPath() + "/" + path);
 		} catch (DbxException dbxe) {
 			if(dbxe instanceof DeleteErrorException) {
 				throw new CustomException("Ne postoji " + fileName + " u udaljenom skladistu!");
@@ -49,15 +49,15 @@ public class MyRemoteFile extends AbstractDropBoxClient implements MyFile{
 
 	@Override
 	public boolean createEmptyFile(String path, String fileName) throws Exception {
-		String complitePath = FilenameUtils.separatorsToSystem(path + "\\" + fileName);
-		File file = new File(complitePath);
+		String sourcePath = FilenameUtils.separatorsToSystem("Results" + "\\" + fileName);
+		File file = new File(sourcePath);
 		if(!file.exists()) {
 			if(!file.createNewFile()) {
 				throw new CreateException("Greska prilikom kreiranja file-a " + fileName);
 			}
 		}
 		
-		uploadFile(complitePath, "");
+		uploadFile(sourcePath, path);
 		
 		//TODO proveriti zasto ne brise!
 		if(!file.delete()) {
@@ -74,7 +74,7 @@ public class MyRemoteFile extends AbstractDropBoxClient implements MyFile{
 		String destinationPath = FilenameUtils.separatorsToSystem(pathDest);
 		OutputStream downloadFile = new FileOutputStream(destinationPath);
 		try {
-			FileMetadata metadata = getClient().files().downloadBuilder(pathSource).download(downloadFile);
+			FileMetadata metadata = storage.getClient().files().downloadBuilder(storage.getRootPath() + "/" + pathSource).download(downloadFile);
 		} finally {
 			downloadFile.close();
 		}
@@ -98,11 +98,16 @@ public class MyRemoteFile extends AbstractDropBoxClient implements MyFile{
 		
 		try {
 			InputStream in = new FileInputStream(file.getAbsolutePath());
-			FileMetadata metadata = getClient().files().uploadBuilder(pathDest + "/" + file.getName()).uploadAndFinish(in);
+			String pathDestination = storage.getRootPath() + pathDest + "/" + file.getName();
+			if(pathDest.equals("") || pathDest.equals("/")) {
+				pathDestination = storage.getRootPath() + file.getName();
+			}			
+	//		System.out.println(pathDestination);
+			FileMetadata metadata = storage.getClient().files().uploadBuilder(pathDestination).uploadAndFinish(in);
 		} catch (Exception e) {
 			if (e instanceof UploadErrorException) {
 				if (pathDest.contains("//")) {
-					throw new CustomException("Pogresno navedena putanja na DropBox-u. Navesti u obliku: /dir1/dir2/");
+					throw new CustomException("Pogresno navedena putanja na DropBox-u. Navesti u obliku: dir1/dir2/");
 				}
 				e.printStackTrace();
 			//	throw new UploadException();
@@ -141,7 +146,7 @@ public class MyRemoteFile extends AbstractDropBoxClient implements MyFile{
 			if(f.isDirectory()) {
 				throw new UploadException("Prosledjeni fajl je direktorijum!");
 			}
-			uploadFile(f.getPath(), pathDest);
+			uploadFile(f.getPath(), storage.getRootPath() + "/" + pathDest);
 		}
 		
 		return true;
@@ -161,7 +166,7 @@ public class MyRemoteFile extends AbstractDropBoxClient implements MyFile{
 
 	@Override
 	public boolean uploadArchive(String archivePath, String destPath) throws Exception {
-		return true;
+		return uploadFile(archivePath, destPath);
 	}
 
 
