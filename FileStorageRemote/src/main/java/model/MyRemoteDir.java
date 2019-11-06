@@ -6,7 +6,7 @@ import java.util.List;
 import raf.rs.FIleStorageSpi.MyDir;
 
 public class MyRemoteDir implements MyDir {
-	private static final String ACCESS_TOKEN = "defy6oaann6viza";
+	
 	public boolean initFileStorage(String path, String rootDirName) throws Exception {
 		// TODO Auto-generated method stub
 		return false;
