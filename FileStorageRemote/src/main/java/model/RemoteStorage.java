@@ -222,5 +222,23 @@ public class RemoteStorage extends DropBoxProvider implements FileStorage {
 	public void setRootPath(String rootPath) {
 		this.rootPath = rootPath;
 	}
+/*
+	@Override
+	public boolean initFileStorage(String rootDir, String name, User rootUser) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+*/
+	@Override
+	public void addForbiddenExtension(String extension) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean initFileStorage(String rootDir, User rootUser) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }
