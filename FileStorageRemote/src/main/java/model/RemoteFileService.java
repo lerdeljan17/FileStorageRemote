@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.Hashtable;
 import java.util.List;
@@ -14,6 +17,7 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.json.JSONObject;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.files.DeleteErrorException;
@@ -37,6 +41,7 @@ public class RemoteFileService implements MyFile{
 	@Override
 	public boolean delFile(String path, String fileName) throws Exception {
 		try {
+			
 			Metadata metadata = storage.getClient().files().delete(storage.getRootPath() + "/" + path);
 		} catch (DbxException dbxe) {
 			if(dbxe instanceof DeleteErrorException) {
@@ -98,11 +103,11 @@ public class RemoteFileService implements MyFile{
 		
 		try {
 			InputStream in = new FileInputStream(file.getAbsolutePath());
-			String pathDestination = storage.getRootPath() + pathDest + "/" + file.getName();
+			String pathDestination = storage.getRootPath() +"/"+ pathDest;
 			if(pathDest.equals("") || pathDest.equals("/")) {
 				pathDestination = storage.getRootPath() + file.getName();
 			}			
-	//		System.out.println(pathDestination);
+			System.out.println(pathDestination);
 			FileMetadata metadata = storage.getClient().files().uploadBuilder(pathDestination).uploadAndFinish(in);
 		} catch (Exception e) {
 			if (e instanceof UploadErrorException) {
@@ -152,21 +157,80 @@ public class RemoteFileService implements MyFile{
 		return true;
 	}
 
+	public String getFileNameFormPath(String filePath) {
+		String toRet[] = filePath.split("/");
+		return toRet[toRet.length-1];
+	}
 	@Override
 	public boolean createMetaDataFile(String FilePath, String metaFileName, Hashtable<String, String> metaData) {
 		// TODO Auto-generated method stub
-		return false;
+		clearResults();
+		JSONObject js = new JSONObject(metaData);
+		try {
+			FileWriter file = new FileWriter("Results/"+getFileNameFormPath(FilePath)+".metaData");
+			PrintWriter pw = new PrintWriter(file);
+			pw.append(js.toString());
+			System.out.println("Successfully Copied JSON Object to File...");
+			file.close();
+			pw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			String dest = FilePath.replace("/"+metaFileName, "");
+			uploadFile("Results/"+getFileNameFormPath(FilePath)+".metaData", dest+"/"+metaFileName);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return true;
 	}
 
 	@Override
 	public boolean addMetaData(String metaFilePath, Hashtable<String, String> metaData) {
 		// TODO Auto-generated method stub
-		return false;
+		clearResults();
+		try {
+			downloadFile(metaFilePath, "Results/"+getFileNameFormPath(metaFilePath));
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		JSONObject js = new JSONObject(metaData);
+		System.out.println(js.toString());
+		try {
+			FileWriter file = new FileWriter("Results/"+getFileNameFormPath(metaFilePath));
+			PrintWriter pw = new PrintWriter(file);
+			pw.append(js.toString());
+			System.out.println("Successfully Copied JSON Object to File...");
+			file.close();
+			pw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			delFile(metaFilePath, "");
+			uploadFile("Results/"+getFileNameFormPath(metaFilePath), metaFilePath);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return true;
 	}
 
 	@Override
 	public boolean uploadArchive(String archivePath, String destPath) throws Exception {
 		return uploadFile(archivePath, destPath);
+	}
+	private void clearResults() {
+		File toDel = new File("Results");
+		String[] entries = toDel.list();
+		for (String s : entries) {
+			File currentFile = new File(toDel.getPath(), s);
+			currentFile.delete();
+		}
 	}
 
 
