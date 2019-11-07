@@ -62,12 +62,6 @@ public class RemoteStorage extends DropBoxProvider implements FileStorage {
 	}
 	
 
-	public void addForbiddenExtension(String extension) {
-		if (extension.contains(".")) {
-			extension.replace(".", "");
-		}
-		this.forbiddenExtension.add(extension);
-	}
 
 	public boolean openConnectionWithUser(User user) throws Exception {
 		// TODO Auto-generated method stub
@@ -167,25 +161,25 @@ public class RemoteStorage extends DropBoxProvider implements FileStorage {
 		return false;
 	}
 
-	public boolean initFileStorage(String rootDir, String name, User rootUser) {
-			if(rootDir.equals("")) {
-		try {
-	            FolderMetadata folder = getClient().files().createFolder(rootDir);
-	            System.out.println(folder.getName());
-	        } catch (CreateFolderErrorException err) {
-	            if (err.errorValue.isPath() && err.errorValue.getPathValue().isConflict()) {
-	                System.out.println("Something already exists at the path.");
-	            } else {
-	                System.out.print("Some other CreateFolderErrorException occurred...");
-	                System.out.print(err.toString());
-	            }
-	        } catch (Exception err) {
-	            System.out.print("Some other Exception occurred...");
-	            System.out.print(err.toString());
-	        }
-		}
-		return true;
-	}
+//	public boolean initFileStorage(String rootDir, String name, User rootUser) {
+//			if(rootDir.equals("")) {
+//		try {
+//	            FolderMetadata folder = getClient().files().createFolder(rootDir);
+//	            System.out.println(folder.getName());
+//	        } catch (CreateFolderErrorException err) {
+//	            if (err.errorValue.isPath() && err.errorValue.getPathValue().isConflict()) {
+//	                System.out.println("Something already exists at the path.");
+//	            } else {
+//	                System.out.print("Some other CreateFolderErrorException occurred...");
+//	                System.out.print(err.toString());
+//	            }
+//	        } catch (Exception err) {
+//	            System.out.print("Some other Exception occurred...");
+//	            System.out.print(err.toString());
+//	        }
+//		}
+//		return true;
+//	}
 
 	public DbxClientV2 getClient() {
 		return client;
@@ -232,7 +226,10 @@ public class RemoteStorage extends DropBoxProvider implements FileStorage {
 	@Override
 	public void addForbiddenExtension(String extension) {
 		// TODO Auto-generated method stub
-		
+		if (extension.contains(".")) {
+			extension.replace(".", "");
+		}
+		this.forbiddenExtension.add(extension);
 	}
 
 	@Override
