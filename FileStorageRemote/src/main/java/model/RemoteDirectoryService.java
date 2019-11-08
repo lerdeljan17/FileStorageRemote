@@ -25,8 +25,10 @@ import com.dropbox.core.v2.files.Metadata;
 
 import exceptions.CreateException;
 import exceptions.NotFoundException;
+import exceptions.PrivilageException;
 import raf.rs.FIleStorageSpi.MyDir;
 import raf.rs.FIleStorageSpi.MyFile;
+import raf.rs.FIleStorageSpi.PrivilageType;
 
 public class RemoteDirectoryService implements MyDir {
 
@@ -80,6 +82,10 @@ public class RemoteDirectoryService implements MyDir {
 	}
 
 	public boolean createMultipleDirectories(String path, String dirsName, int numberOfDirs) throws Exception {
+		if(!checkPrivilage(PrivilageType.CREATE)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
 		if (numberOfDirs <= 0) {
 			throw new CreateException();
 		}
@@ -92,6 +98,10 @@ public class RemoteDirectoryService implements MyDir {
 	}
 
 	public boolean createEmptyDirectoryB(String path, String fileName) throws Exception {
+		if(!checkPrivilage(PrivilageType.CREATE)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
 		String fullPath = fileStorage.getRootPath() + "/" + path + "/" + fileName;
 		try {
 			FolderMetadata folder = fileStorage.getProvider().getClient().files().createFolder(fullPath);
@@ -111,6 +121,10 @@ public class RemoteDirectoryService implements MyDir {
 	}
 
 	public boolean delDirectory(String path, String dirName) throws Exception {
+		if(!checkPrivilage(PrivilageType.DELETE)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
 		try {
 			Metadata metadata = fileStorage.getProvider().getClient().files()
 					.delete(fileStorage.getRootPath() + "/" + path + "/" + dirName);
@@ -122,6 +136,10 @@ public class RemoteDirectoryService implements MyDir {
 	}
 
 	public boolean downloadDirectory(String pathSource, String pathDest) throws Exception {
+		if(!checkPrivilage(PrivilageType.DOWNLOAD)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
 		String path = pathDest;
 		if (!pathDest.contains(".zip")) {
 			path += ".zip";
@@ -210,6 +228,10 @@ public class RemoteDirectoryService implements MyDir {
 	}
 
 	public List<String> getAllFiles(boolean sorted, String dirPath) throws Exception {
+		if(!checkPrivilage(PrivilageType.READ)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
 
 		this.clearResults();
 		File[] toRet;
@@ -276,6 +298,12 @@ public class RemoteDirectoryService implements MyDir {
 		}
 	}
 
+	private boolean checkPrivilage(PrivilageType prv) {
+		if(fileStorage.getCurrentUser().getPrivilages().contains(prv)) return true;
+		return false;
+	}
+
+	
 	public RemoteStorage getFileStorage() {
 		return fileStorage;
 	}

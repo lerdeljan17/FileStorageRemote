@@ -30,8 +30,10 @@ import com.dropbox.core.v2.files.WriteMode;
 
 import exceptions.CreateException;
 import exceptions.CustomException;
+import exceptions.PrivilageException;
 import exceptions.UploadException;
 import raf.rs.FIleStorageSpi.MyFile;
+import raf.rs.FIleStorageSpi.PrivilageType;
 
 public class RemoteFileService implements MyFile {
 
@@ -43,6 +45,11 @@ public class RemoteFileService implements MyFile {
 
 	@Override
 	public boolean delFile(String path, String fileName) throws Exception {
+		if(!checkPrivilage(PrivilageType.DELETE)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
+		
 		try {
 			Metadata metadata = storage.getProvider().getClient().files().delete(storage.getRootPath() + "/" + path);
 		} catch (DbxException dbxe) {
@@ -56,6 +63,11 @@ public class RemoteFileService implements MyFile {
 
 	@Override
 	public boolean createEmptyFile(String path, String fileName) throws Exception {
+		if(!checkPrivilage(PrivilageType.CREATE)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
+		
 		clearResults();
 		String sourcePath = FilenameUtils.separatorsToSystem("Results" + "\\" + fileName);
 		File file = new File(sourcePath);
@@ -74,6 +86,11 @@ public class RemoteFileService implements MyFile {
 
 	@Override
 	public boolean downloadFile(String pathSource, String pathDest) throws Exception {
+		if(!checkPrivilage(PrivilageType.DOWNLOAD)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
+		
 		String destinationPath = FilenameUtils.separatorsToSystem(pathDest);
 		OutputStream downloadFile = new FileOutputStream(destinationPath);
 		try {
@@ -90,6 +107,10 @@ public class RemoteFileService implements MyFile {
 
 	@Override
 	public boolean uploadFile(String pathSource, String pathDest) throws Exception {
+		if(!checkPrivilage(PrivilageType.UPLOAD)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
 		String path = FilenameUtils.separatorsToSystem(pathSource);
 		File file = new File(path);
 		if (!file.exists()) {
@@ -135,6 +156,10 @@ public class RemoteFileService implements MyFile {
 
 	@Override
 	public boolean createMultipleFiles(String path, String fileName, int numberOfFiles) throws Exception {
+		if(!checkPrivilage(PrivilageType.CREATE)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
 		if (numberOfFiles <= 0) {
 			throw new CreateException("Prosledjeni broj mora biti pozitivan!");
 		}
@@ -149,6 +174,10 @@ public class RemoteFileService implements MyFile {
 
 	@Override
 	public boolean uploadMultipleFiles(String pathDest, List<File> files) throws Exception {
+		if(!checkPrivilage(PrivilageType.UPLOAD)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
 		if (files.isEmpty()) {
 			throw new UploadException("Lista prosledjenih fajlova je prazna!");
 		}
@@ -169,7 +198,12 @@ public class RemoteFileService implements MyFile {
 	}
 
 	@Override
-	public boolean createMetaDataFile(String filePath, String metaFileName, Hashtable<String, String> metaData) {
+	public boolean createMetaDataFile(String filePath, Hashtable<String, String> metaData) {
+		if(!checkPrivilage(PrivilageType.META)) {
+			System.out.println("Nemate privilegiju");
+			return false;
+		}
+		
 		// TODO provera da je filePath file
 		clearResults();
 		JSONObject js = new JSONObject(metaData);
@@ -206,6 +240,11 @@ public class RemoteFileService implements MyFile {
 
 	@Override
 	public boolean addMetaData(String metaFilePath, Hashtable<String, String> metaData) {
+		if(!checkPrivilage(PrivilageType.META)) {
+			System.out.println("Nemate privilegiju");
+			return false;
+		}
+		
 		clearResults();
 		try {
 			downloadFile(metaFilePath, "Results/" + getFileNameFormPath(metaFilePath));
@@ -237,6 +276,10 @@ public class RemoteFileService implements MyFile {
 
 	@Override
 	public boolean uploadArchive(String archivePath, String destPath) throws Exception {
+		if(!checkPrivilage(PrivilageType.UPLOAD)) {
+			throw new PrivilageException("Nemate privilegiju");
+		}
+		
 		if (storage.getForbiddenExtension().contains("zip")) {
 			throw new UploadException("Skladiste ne podrzava fajlove sa ekstanzijom {zip}");
 		}
@@ -250,6 +293,11 @@ public class RemoteFileService implements MyFile {
 			File currentFile = new File(toDel.getPath(), s);
 			currentFile.delete();
 		}
+	}
+
+	private boolean checkPrivilage(PrivilageType prv) {
+		if(storage.getCurrentUser().getPrivilages().contains(prv)) return true;
+		return false;
 	}
 
 }
