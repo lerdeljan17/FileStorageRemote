@@ -6,6 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.List;
 
 import com.dropbox.core.DbxApiException;
 import com.dropbox.core.DbxException;
@@ -16,62 +20,71 @@ import com.dropbox.core.v2.files.Metadata;
 import com.dropbox.core.v2.files.FolderMetadata;
 import com.dropbox.core.v2.files.UploadErrorException;
 
-import model.MyRemoteFile;
+import model.RemoteDirectoryService;
+import model.RemoteFileService;
 import model.RemoteStorage;
+import model.RemoteUser;
 
 /**
  * Hello world!
  *
  */
 public class App {
-	public static void main(String[] args) {
-		
-	/*
-		File file = new File("C:\\Users\\subot\\Desktop\\root\\lazar1");
-		System.out.println(file.getAbsolutePath());
-		if (file.exists()) {
-			System.out.println("postoji");
-		}
-	*/
-		
-		RemoteStorage rs = null;
-		try {
-			rs = new RemoteStorage();
-		} catch (DbxException e) {
-			e.printStackTrace();
-		}
 
-		MyRemoteFile mrf = new MyRemoteFile("Something");
+	public static void main(String[] args) {
+
+		RemoteUser admin = new RemoteUser("Student", "Studentic", true);
+		
 		try {
-			mrf.uploadFile("C:\\Users\\subot\\Desktop\\root\\lazar1.txt", "/Deda/Mama");
+			RemoteStorage rs = new RemoteStorage("", true, admin);
+			rs.addForbiddenExtension(".jpg");
+			admin.setFileStorage(rs);
+			System.out.println("Users: " + rs.getUsers());
+			admin.disconnectFromFileStorage(rs.getRootPath());
+			System.out.println("Users: " + rs.getUsers());
+			admin.connectToFileStorage("");
+			System.out.println(rs.getUsers());
+			System.out.println(rs.getForbiddenExtension());
+/*			
+			Hashtable<String, String> table = new Hashtable<String, String>();
+			table.put("Kuca", "Kucica");
+			table.put("Zgrada", "Zgradica");
+			table.put("Put", "Putic");
+			table.put("Skola", "Skolica");
+			
+			RemoteFileService rfs = new RemoteFileService(rs);
+			rfs.createMetaDataFile("Deda/proba3.txt", "hashtable", table);
+			rfs.addMetaData("Deda/proba3.txt.metaData", table);
+			
+			rfs.uploadFile("C:\\Users\\subot\\Desktop\\Konzolna aplikacija.txt", "Deda/Tetka/Konzolna aplikacija.txt");
+			rfs.downloadFile("Deda/proradi", "C:\\Users\\subot\\Desktop\\Proba3.txt");
+			rfs.uploadArchive("C:\\Users\\subot\\Desktop\\Desktop.zip", "");
+	//		rfs.delFile("Deda/Proba3.txt", "");
+			List<File> files = new ArrayList<File>();
+			files.add(new File("C:\\Users\\subot\\Desktop\\App.txt"));
+			files.add(new File("C:\\Users\\subot\\Desktop\\Analiza Zbirka\\MAPraktikum.pdf"));
+			files.add(new File("D:\\V semestar\\Programski prevodioci\\PP Projekat 1.pdf"));
+			rfs.uploadMultipleFiles("", files);
+			rfs.createEmptyFile("", "deckoHajdeOladi");
+			rfs.createMultipleFiles("Deda", "nocasssMiSrceeePatiii", 5);
+*/
+			RemoteDirectoryService rds = new RemoteDirectoryService(rs);
+			rds.createEmptyDirectoryB("Deda", "Prazan");
+			rds.createMultipleDirectories("Deda/Tata", "Praznjikav", 3);
+			rds.delDirectory("Deda/Tata", "Praznjikav 1");
+			rds.downloadDirectory("Deda", "C:\\Users\\subot\\Desktop\\PreuzetDeda.zip");
+			rds.downloadDirectory("Deda", "C:\\Users\\subot\\Desktop\\PreuzetDedaBezZip");
+			System.out.println("listFiles: " + rds.listFiles("Deda", false));
+			System.out.println("listDirectories: " + rds.listDirectories("Deda"));
+			System.out.println("getFilesWithExtension: " + rds.getFilesWithExtension("Deda", ".metaData"));
+			System.out.println("getAllFiles: " + rds.getAllFiles(true, "Deda"));
+			System.out.println("searchDirectory: " + Arrays.toString(rds.searchDirectory("Deda", "silvija")));
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		
-	/*
-		DbxClientV2 client = rs.getClient();
-
-		try { // Get files and folder metadata from Dropbox root directory
-			ListFolderResult result = client.files().listFolder("");
-			while (true) {
-				for (Metadata metadata : result.getEntries()) {
-					System.out.println(metadata.getPathLower());
-					if (metadata instanceof FolderMetadata) {
-						FolderMetadata fm = (FolderMetadata) metadata;
-						System.out.println(fm.getName());
-					}
-				}
-
-				if (!result.getHasMore()) {
-					break;
-				}
-
-				result = client.files().listFolderContinue(result.getCursor());
-			}
-		} catch (DbxException dbxe) {
-			dbxe.printStackTrace();
-		}
-	 */
+		
 	}
+	
 }
